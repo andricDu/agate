@@ -24,6 +24,11 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <!-- Google Sign-in (OpenID Connect Client) -->
+  <meta name="google-signin-scope" content="profile email">
+  <meta name="google-signin-client_id" content="211484090774-lhopo8ejfe5d67nh4cf74chtts0rftur.apps.googleusercontent.com">
+
   <title></title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width">
@@ -40,6 +45,7 @@
   <!-- endbower -->
   <!-- endbuild -->
   <link rel="stylesheet" href="ws/config/style.css">
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
 <body ng-app="agate" ng-controller="MainController">
 <!--[if lt IE 10]>
@@ -48,7 +54,7 @@
 <![endif]-->
 <!--<div class="development"></div>-->
 
-<div class="navbar navbar-default navbar-fixed-top"  role="navigation">
+<div ng-cloak class="navbar navbar-default navbar-fixed-top"  role="navigation">
   <div class="container">
     <div class="navbar-header">
       <a href="#" class="navbar-brand">{{agateConfig.name}}</a>
@@ -225,5 +231,6 @@
 <script src="app/ticket/ticket-controller.js"></script>
 <script src="app/ticket/ticket-service.js"></script>
 <!-- endbuild -->
+
 </body>
 </html>

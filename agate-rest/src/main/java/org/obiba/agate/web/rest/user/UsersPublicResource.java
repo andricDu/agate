@@ -13,6 +13,11 @@ package org.obiba.agate.web.rest.user;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.LowLevelHttpRequest;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -47,11 +52,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.security.GeneralSecurityException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -62,7 +64,6 @@ import java.util.stream.Collectors;
 public class UsersPublicResource {
 
   private static final String CURRENT_USER_NAME = "_current";
-
   private static final String[] BUILTIN_PARAMS = new String[] { "username", "firstname", "lastname", "application", //
     "email", "locale", "group", "reCaptchaResponse" };
 
@@ -140,6 +141,22 @@ public class UsersPublicResource {
     userService.save(userCredentials);
 
     return Response.noContent().build();
+  }
+
+  @POST
+  @Path("/_google")
+  public Response withGoogle(@FormParam("accessToken") String accessToken, @FormParam("username") String username,
+                             @Context HttpServletRequest request) throws IOException, GeneralSecurityException {
+    if(Strings.isNullOrEmpty(accessToken)) throw new BadRequestException("accessToken cannot be empty");
+
+    User user = userService.findGoogleUser(accessToken);
+    if (user!=null) {
+      // respond with login
+    } else {
+      // respond with redirect to create user
+    }
+
+    return Response.ok().build();
   }
 
   @POST

@@ -11,11 +11,9 @@
 package org.obiba.agate.service;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.SignatureException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -23,8 +21,11 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import org.apache.commons.lang.LocaleUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.crypto.hash.Sha512Hash;
@@ -58,6 +59,10 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+
 /**
  * Service class for managing users.
  */
@@ -66,8 +71,10 @@ import com.google.common.eventbus.Subscribe;
 public class UserService {
 
   private static final Logger log = LoggerFactory.getLogger(UserService.class);
-
   private static final int MINIMUM_LEMGTH = 8;
+  private static final GoogleIdTokenVerifier VERIFIER = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new JacksonFactory())
+    .setAudience(Collections.singletonList("211484090774-lhopo8ejfe5d67nh4cf74chtts0rftur.apps.googleusercontent.com"))
+    .build();
 
   @Inject
   private UserRepository userRepository;
@@ -310,6 +317,15 @@ public class UserService {
 
     user.setStatus(UserStatus.ACTIVE);
     save(user);
+  }
+
+  public User findGoogleUser(@NotNull String accessToken) throws IOException, GeneralSecurityException {
+    GoogleIdToken idToken = VERIFIER.verify(accessToken);
+    if (idToken != null) {
+      String email = idToken.getPayload().getEmail();
+      return findUserByEmail(email);
+    }
+    return null;
   }
 
   public void updateUserLastLogin(@NotNull String username) {
